@@ -2,7 +2,9 @@ cmake_minimum_required(VERSION 2.8.3)
 project(yocs_diff_drive_pose_controller)
 
 find_package(catkin REQUIRED COMPONENTS ecl_threads
+                                        dynamic_reconfigure
                                         geometry_msgs
+                                        gopher_navi_msgs
                                         nodelet
                                         pluginlib
                                         roscpp
@@ -16,7 +18,9 @@ find_package(catkin REQUIRED COMPONENTS ecl_threads
 catkin_package(INCLUDE_DIRS include
                LIBRARIES yocs_diff_drive_pose_controller yocs_diff_drive_pose_controller_nodelet
                CATKIN_DEPENDS ecl_threads
+                              dynamic_reconfigure
                               geometry_msgs
+                              gopher_navi_msgs
                               nodelet
                               pluginlib
                               roscpp

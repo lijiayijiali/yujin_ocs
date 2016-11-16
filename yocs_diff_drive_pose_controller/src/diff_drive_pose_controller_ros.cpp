@@ -41,8 +41,7 @@ bool DiffDrivePoseControllerROS::init()
 {
   enable_controller_subscriber_ = nh_.subscribe("enable", 10, &DiffDrivePoseControllerROS::enableCB, this);
   disable_controller_subscriber_ = nh_.subscribe("disable", 10, &DiffDrivePoseControllerROS::disableCB, this);
-  control_velocity_subscriber_ = nh_.subscribe("control_max_vel", 10, &DiffDrivePoseControllerROS::controlMaxVelCB,
-                                               this);
+  control_velocity_subscriber_ = nh_.subscribe("control_max_vel", 10, &DiffDrivePoseControllerROS::controlMaxVelCB,this);
   command_velocity_publisher_ = nh_.advertise<geometry_msgs::Twist>("command_velocity", 10);
   pose_reached_publisher_ = nh_.advertise<std_msgs::Bool>("pose_reached", 10);
 
@@ -133,6 +132,13 @@ bool DiffDrivePoseControllerROS::init()
       "base_frame_name = " << base_frame_name_ <<", goal_frame_name = " << goal_frame_name_ << " [" << name_ <<"]");
   ROS_DEBUG_STREAM(
       "v_max = " << v_max_ <<", k_1 = " << k_1_ << ", k_2 = " << k_2_ << ", beta = " << beta_ << ", lambda = " << lambda_ << ", dist_thres = " << dist_thres_ << ", orient_thres = " << orient_thres_ <<" [" << name_ <<"]");
+
+  reconfig_server_ = boost::shared_ptr<dynamic_reconfigure::Server<gopher_navi_msgs::PoseControllerConfig> >(
+        new dynamic_reconfigure::Server<gopher_navi_msgs::PoseControllerConfig>(nh_));
+    reconfig_callback_func_ = boost::bind(&DiffDrivePoseControllerROS::reconfigCB, this, _1, _2);
+    reconfig_server_->setCallback(reconfig_callback_func_);
+
+
   return true;
 }
 
@@ -246,6 +252,24 @@ void DiffDrivePoseControllerROS::disableCB(const std_msgs::EmptyConstPtr msg)
   {
     ROS_INFO_STREAM("Controller was already disabled. [" << name_ <<"]");
   }
+}
+
+void DiffDrivePoseControllerROS::reconfigCB(gopher_navi_msgs::PoseControllerConfig &config, uint32_t level)
+{
+  dynamic_reconfig_mutex_.lock();
+  v_min_movement_ = config.v_min;
+  v_max_ = config.v_max;
+  w_max_ = config.w_max;
+  w_min_ = config.w_min;
+  k_1_ = config.k_1;
+  k_2_ = config.k_2;
+  beta_ = config.beta;
+  lambda_ = config.lambda;
+  dist_thres_ = config.dist_thres;
+  orient_thres_ = config.orient_thres;
+  dist_eps_ = config.dist_eps;
+  orient_eps_ = config.orient_eps;
+  dynamic_reconfig_mutex_.unlock();
 }
 
 } // namespace yocs
