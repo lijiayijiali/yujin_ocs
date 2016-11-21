@@ -3,7 +3,7 @@
 
 #include <string>
 #include <yocs_controllers/default_controller.hpp>
-
+#include <ecl/threads/mutex.hpp>
 namespace yocs
 {
 
@@ -171,6 +171,8 @@ protected:
   double orient_eps_;
   /// Enable or disable ros messages.
   bool verbose_;
+
+  ecl::Mutex controller_mutex_;
 };
 
 } /* end namespace */

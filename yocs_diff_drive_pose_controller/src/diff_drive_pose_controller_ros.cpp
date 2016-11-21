@@ -41,7 +41,8 @@ bool DiffDrivePoseControllerROS::init()
 {
   enable_controller_subscriber_ = nh_.subscribe("enable", 10, &DiffDrivePoseControllerROS::enableCB, this);
   disable_controller_subscriber_ = nh_.subscribe("disable", 10, &DiffDrivePoseControllerROS::disableCB, this);
-  control_velocity_subscriber_ = nh_.subscribe("control_max_vel", 10, &DiffDrivePoseControllerROS::controlMaxVelCB,this);
+  control_velocity_subscriber_ = nh_.subscribe("control_max_vel", 10, &DiffDrivePoseControllerROS::controlMaxVelCB,
+                                               this);
   command_velocity_publisher_ = nh_.advertise<geometry_msgs::Twist>("command_velocity", 10);
   pose_reached_publisher_ = nh_.advertise<std_msgs::Bool>("pose_reached", 10);
 
@@ -134,10 +135,9 @@ bool DiffDrivePoseControllerROS::init()
       "v_max = " << v_max_ <<", k_1 = " << k_1_ << ", k_2 = " << k_2_ << ", beta = " << beta_ << ", lambda = " << lambda_ << ", dist_thres = " << dist_thres_ << ", orient_thres = " << orient_thres_ <<" [" << name_ <<"]");
 
   reconfig_server_ = boost::shared_ptr<dynamic_reconfigure::Server<gopher_navi_msgs::PoseControllerConfig> >(
-        new dynamic_reconfigure::Server<gopher_navi_msgs::PoseControllerConfig>(nh_));
-    reconfig_callback_func_ = boost::bind(&DiffDrivePoseControllerROS::reconfigCB, this, _1, _2);
-    reconfig_server_->setCallback(reconfig_callback_func_);
-
+                               new dynamic_reconfigure::Server<gopher_navi_msgs::PoseControllerConfig>(nh_));
+  reconfig_callback_func_ = boost::bind(&DiffDrivePoseControllerROS::reconfigCB, this, _1, _2);
+  reconfig_server_->setCallback(reconfig_callback_func_);
 
   return true;
 }

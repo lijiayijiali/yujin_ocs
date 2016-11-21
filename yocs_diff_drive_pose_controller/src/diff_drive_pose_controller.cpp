@@ -62,6 +62,7 @@ bool DiffDrivePoseController::step()
 
 void DiffDrivePoseController::calculateControls()
 {
+  controller_mutex_.lock();
   double angle_diff = mtk::wrapAngle(theta_ - delta_);
 
   if (r_ > dist_thres_)
@@ -97,10 +98,12 @@ void DiffDrivePoseController::calculateControls()
       }
     }
   }
+  controller_mutex_.unlock();
 }
 
 void DiffDrivePoseController::controlPose()
 {
+  controller_mutex_.lock();
   double atan2_k1_theta = std::atan2(-k_1_*theta_, 1.0);
   cur_ = (-1 / r_)
       * (k_2_ * (delta_ - atan2_k1_theta) + (1 + (k_1_ / (1 + std::pow((k_1_ * theta_), 2)))) * sin(delta_));
@@ -122,16 +125,20 @@ void DiffDrivePoseController::controlPose()
   v_ = enforceMinMax(v_, v_min_, v_max_);
 
 //  ROS_WARN_STREAM("r_: " << r_ << " dist_thres_: " << dist_thres_ << ", delta_-theta_: " << delta_ - theta_ << ", orient_thres_" << orient_thres_);
+  controller_mutex_.unlock();
 }
 
 void DiffDrivePoseController::controlOrientation(double angle_difference)
 {
+  controller_mutex_.lock();
 
   w_ = orientation_gain_ * (angle_difference);
 
   //enforce limits on angular velocity
   w_ = enforceMinVelocity(w_, w_min_movement_);
   w_ = enforceMinMax(w_, w_min_, w_max_);
+
+  controller_mutex_.unlock();
 }
 
 double DiffDrivePoseController::enforceMinMax(double& value, double min, double max)
